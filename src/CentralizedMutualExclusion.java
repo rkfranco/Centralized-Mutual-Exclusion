@@ -1,17 +1,19 @@
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
 import java.util.stream.Collectors;
 
 public class CentralizedMutualExclusion extends Thread {
     private final int KILL_COORDENATOR = 60000;
     private final int CREATE_PROCESS = 40000;
 
-    private List<Process> processList;
 
-    private Queue<ResourceRequisition> resourceRequisitions;
+    private List<Process> processList;
+    private Coordenator coordenator;
 
     public CentralizedMutualExclusion() {
         this.processList = new ArrayList<>();
-        this.resourceRequisitions = new LinkedList<>();
+        setNewCoordenator();
     }
 
     private void killCoordenator() {
@@ -19,18 +21,14 @@ public class CentralizedMutualExclusion extends Thread {
             while (true) {
                 try {
                     Thread.sleep(KILL_COORDENATOR);
-                    setProcessList(getProcessList().stream().filter(Process::isNotCoordenator).collect(Collectors.toList()));
-                    setResourceRequisitions(new LinkedList<>());
                     setNewCoordenator();
+                    System.out.println("Coordenador eliminado - Toda a execucao do processo atual foi perdida");
+                    System.out.println();
                 } catch (InterruptedException e) {
                     throw new RuntimeException(e);
                 }
             }
-        });
-    }
-
-    private void setNewCoordenator() {
-        getProcessList().stream().map(Process::getId).max();
+        }).start();
     }
 
     private void createProcess() {
@@ -38,12 +36,16 @@ public class CentralizedMutualExclusion extends Thread {
             while (true) {
                 try {
                     Thread.sleep(CREATE_PROCESS);
-                    addProcess(new Process(createProcessId()));
+                    Process process = new Process(createProcessId(), getCoordenator());
+                    process.sendRequisition(getCoordenator());
+                    addProcess(process);
+                    System.out.println("Processo criado");
+                    printProcesses();
                 } catch (InterruptedException e) {
                     throw new RuntimeException(e);
                 }
             }
-        });
+        }).start();
     }
 
     private int createProcessId() {
@@ -71,11 +73,23 @@ public class CentralizedMutualExclusion extends Thread {
         this.getProcessList().add(process);
     }
 
-    public Queue<ResourceRequisition> getResourceRequisitions() {
-        return resourceRequisitions;
+    public Coordenator getCoordenator() {
+        return this.coordenator;
     }
 
-    public void setResourceRequisitions(Queue<ResourceRequisition> resourceRequisitions) {
-        this.resourceRequisitions = resourceRequisitions;
+    private void setNewCoordenator() {
+        this.coordenator = new Coordenator();
+        getProcessList().forEach(p -> p.setCoordenator(getCoordenator()));
+    }
+
+    private void printProcesses() {
+        String msg = getProcessList().stream().map(Process::toString).collect(Collectors.joining(", "));
+        System.out.println("Processos: [" + msg + "]\n");
+    }
+
+    @Override
+    public void run() {
+        this.killCoordenator();
+        this.createProcess();
     }
 }

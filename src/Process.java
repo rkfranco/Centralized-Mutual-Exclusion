@@ -5,13 +5,20 @@ public class Process {
     private final int REQUEST_RESOURCE_MIN = 10000;
     private final int REQUEST_RESOURCE_MAX = 25000;
     private long id;
-    private boolean isCoordenator;
 
-    private Resource resource;
+    private Coordenator coordenator;
 
-    public Process(int id) {
+    public Process(int id, Coordenator coordenator) {
         setId(id);
-        setCoordenator(false);
+        sendRequisition(coordenator);
+    }
+
+    public Coordenator getCoordenator() {
+        return coordenator;
+    }
+
+    public void setCoordenator(Coordenator coordenator) {
+        this.coordenator = coordenator;
     }
 
     public long getId() {
@@ -22,61 +29,40 @@ public class Process {
         this.id = id;
     }
 
-    public boolean isCoordenator() {
-        return isCoordenator;
-    }
-
-    public boolean isNotCoordenator() {
-        return !isCoordenator;
-    }
-
-    public void setCoordenator(boolean coordenator) {
-        isCoordenator = coordenator;
-    }
-
-    public void setCoordenator() {
-        setCoordenator(true);
-    }
-
-    public Resource getResource() {
-        return resource;
-    }
-
-    public void setResource(Resource resource) {
+    public void execute(Coordenator coordenatorParam) {
         new Thread(() -> {
             try {
-                this.resource = resource;
-                Thread.sleep(getRandomTime(PROCESS_RESOURCE_MAX, PROCESS_RESOURCE_MIN));
-                this.resource = null;
+                System.out.println("Iniciando processo");
+                System.out.println();
+                Thread.sleep(getRandomTime(PROCESS_RESOURCE_MIN, PROCESS_RESOURCE_MAX));
+                System.out.println("Processo finalizado");
+                System.out.println();
+                coordenatorParam.endProcess();
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
             }
-        });
+        }).start();
     }
 
-    public void sendResourceRequisition(Process coordenator) {
+    public void sendRequisition(Coordenator coordenator) {
         new Thread(() -> {
+            Requisition requisition = new Requisition(this);
             while (true) {
                 try {
-                    Thread.sleep(getRandomTime(REQUEST_RESOURCE_MAX, REQUEST_RESOURCE_MIN));
-
+                    Thread.sleep(getRandomTime(REQUEST_RESOURCE_MIN, REQUEST_RESOURCE_MAX));
+                    System.out.println("Enviando requisicao");
+                    System.out.println();
+                    getCoordenator().receiveRequisition(requisition);
                 } catch (InterruptedException e) {
                     throw new RuntimeException(e);
                 }
+
             }
-        });
+        }).start();
     }
 
     private int getRandomTime(int upper, int lower) {
         return (int) (Math.random() * (upper - lower)) + lower;
-    }
-
-    public ProcessRequisition createRequisition() {
-        return new ProcessRequisition((int) getId());
-    }
-
-    public void receiveRequisition(ProcessRequisition processRequisition) {
-        processRequisition.setId((int) Math.max(processRequisition.getId(), getId()));
     }
 
     @Override
