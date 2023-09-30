@@ -1,67 +1,48 @@
-import java.util.LinkedList;
-import java.util.Queue;
-import java.util.stream.Collectors;
-
-import static java.util.Objects.nonNull;
+import java.util.*;
 
 public class Coordenator {
-    private Process executing;
-    private Queue<Requisition> requisitionsList;
+    private final HashMap<Resource, Queue<Requisition>> resourcesRequisitions;
 
     public Coordenator() {
-        this.requisitionsList = new LinkedList<>();
+        this.resourcesRequisitions = new HashMap<>();
+
+        // just for testing
+        this.resourcesRequisitions.put(new Resource(1), new LinkedList<>());
+        this.resourcesRequisitions.put(new Resource(2), new LinkedList<>());
     }
 
-    public boolean receiveRequisition(Requisition requisition) {
-        if (nonNull(getExecuting())) {
-            this.requisitionsList.add(requisition);
-            System.out.println("Requisicao recusada");
-            printRequisitionList();
+    public boolean requestResourceAccess(Requisition requisition) {
+        Resource resource = requisition.getResource();
+
+        if (resource.isBeingAccessed()) {
+            System.out.printf("%s - Requisição de acesso do processo ao recurso recusada\n", requisition);
+            this.resourcesRequisitions.get(resource).add(requisition);
             return false;
         }
-        setExecuting(requisition.getProcess());
-        getExecuting().execute(this);
-        System.out.println("Requisicao aceita");
-        printRequisitionList();
+
+        System.out.printf("%s - Requisição de acesso do processo ao recurso aceita\n", requisition);
+        resource.setBeingAccessed(true);
+        requisition.getProcess().executeProcessing(this, resource);
         return true;
     }
 
-    public void endProcess() {
-        setExecuting(null);
-        if (hasNextProcess()) {
-            setExecuting(getRequisitionsList().remove().getProcess());
-            getExecuting().execute(this);
-            System.out.println("Removendo item da Fila");
-            printRequisitionList();
+    public void releaseResource(Requisition requisition) {
+        Resource resource = requisition.getResource();
+        resource.setBeingAccessed(false);
+        System.out.printf("%s - Recurso liberado pelo processo\n", requisition);
+
+        Queue<Requisition> requisitionQueue = this.resourcesRequisitions.get(resource);
+        if (!requisitionQueue.isEmpty()) {
+            Requisition nextRequisition = requisitionQueue.remove();
+            System.out.printf("%s - Próximo processo na fila de acesso ao recurso\n", requisition);
+            resource.setBeingAccessed(true);
+            nextRequisition.getProcess().executeProcessing(this, resource);
         }
     }
 
-    public void printRequisitionList() {
-        System.out.println("Fila: [" +
-                getRequisitionsList().stream()
-                        .map(Requisition::getProcess)
-                        .map(Process::toString)
-                        .collect(Collectors.joining(", "))
-                + "]\n");
-    }
-
-    public Process getExecuting() {
-        return executing;
-    }
-
-    public void setExecuting(Process executing) {
-        this.executing = executing;
-    }
-
-    public Queue<Requisition> getRequisitionsList() {
-        return requisitionsList;
-    }
-
-    public void setRequisitionsList(Queue<Requisition> requisitionsList) {
-        this.requisitionsList = requisitionsList;
-    }
-
-    private boolean hasNextProcess() {
-        return !this.requisitionsList.isEmpty();
+    public Resource getRandomResource() {
+        int randomIndex = new Random().nextInt(this.resourcesRequisitions.size());
+        Resource[] keysArray = this.resourcesRequisitions.keySet().toArray(new Resource[0]);
+        return keysArray[randomIndex];
     }
 }
