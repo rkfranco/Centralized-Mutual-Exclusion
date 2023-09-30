@@ -5,10 +5,10 @@ public class Main {
 }
 
 /*
- a cada 30 segundos um novo processo deve ser criado
- a cada 25 segundos um processo fazer uma requisição para o coordenador
- a cada 100 segundos o coordenador fica inativo
- a cada 80 segundos um processo da lista de processos fica inativo
- dois processos não podem ter o mesmo ID
- dois processos de eleição não podem acontecer simultaneamente
+- a cada 1 minuto o coordenador morre
+- quando o coordenador morre, a fila também morre
+- o tempo de processamento de um recurso é de 5 a 15 segundos
+- os processos tentam consumir o(s) recurso(s) num intervalo de 10 a 25 segundos
+- a cada 40 segundos um novo processo deve ser criado (ID randômico)
+- dois processos não podem ter o mesmo ID
 * */
