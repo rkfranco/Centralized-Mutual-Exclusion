@@ -11,19 +11,18 @@ public class Coordenator {
         this.resourcesRequisitions.put(new Resource(2), new LinkedList<>());
     }
 
-    public boolean requestResourceAccess(Requisition requisition) {
+    public void requestResourceAccess(Requisition requisition) {
         Resource resource = requisition.getResource();
 
         if (resource.isBeingAccessed()) {
             System.out.printf("%s - Requisição de acesso do processo ao recurso recusada\n", requisition);
             this.resourcesRequisitions.get(resource).add(requisition);
-            return false;
+            return;
         }
 
         System.out.printf("%s - Requisição de acesso do processo ao recurso aceita\n", requisition);
         resource.setBeingAccessed(true);
         requisition.getProcess().executeProcessing(this, resource);
-        return true;
     }
 
     public void releaseResource(Requisition requisition) {
