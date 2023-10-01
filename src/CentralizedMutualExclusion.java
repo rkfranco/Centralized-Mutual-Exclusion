@@ -8,7 +8,7 @@ public class CentralizedMutualExclusion extends Thread {
     private final int CREATE_PROCESS = 40000;
 
     private final List<Process> processes;
-    private Coordenator coordenator;
+    public static Coordenator coordenator;
 
     public CentralizedMutualExclusion() {
         this.processes = new ArrayList<>();
@@ -22,6 +22,10 @@ public class CentralizedMutualExclusion extends Thread {
                     Thread.sleep(KILL_COORDENATOR);
                     System.out.println("\n---> Coordenador eliminado - Toda a execucao do processo atual foi perdida");
                     setNewCoordenator();
+                    for (Process process : this.processes) {
+                        process.stopCurrentProcessing();
+                        process.sendResourceRequisition();
+                    }
                 } catch (InterruptedException e) {
                     throw new RuntimeException(e);
                 }
@@ -35,7 +39,7 @@ public class CentralizedMutualExclusion extends Thread {
                 try {
                     Thread.sleep(CREATE_PROCESS);
                     Process process = new Process(createProcessId());
-                    process.sendResourceRequisition(this.coordenator);
+                    process.sendResourceRequisition();
                     this.processes.add(process);
                     System.out.println("\n---> Criação de um novo processo");
                     printProcesses();
@@ -60,7 +64,7 @@ public class CentralizedMutualExclusion extends Thread {
     }
 
     private void setNewCoordenator() {
-        this.coordenator = new Coordenator();
+        coordenator = new Coordenator();
     }
 
     private void printProcesses() {
