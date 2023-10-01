@@ -24,7 +24,7 @@ public class Process {
             System.out.printf("%s %s - Processo iniciou execução do recurso - Duração %s seg\n", this, resource, (processingDuration / 1000));
             Thread.sleep(processingDuration);
             System.out.printf("%s %s - Processo finalizou execução do recurso - Duração %s seg\n", this, resource, (processingDuration / 1000));
-            CentralizedMutualExclusion.coordenator.releaseResource(new Requisition(this, resource));
+            CentralizedMutualExclusion.coordinator.releaseResource(new Requisition(this, resource));
         } catch (InterruptedException e) {
             System.out.printf("%s %s - Processo interrompeu execução do recurso\n", this, resource);
         }
@@ -35,9 +35,9 @@ public class Process {
             while (true) {
                 try {
                     Thread.sleep(getRandomValueBetween(REQUEST_RESOURCE_MIN, REQUEST_RESOURCE_MAX));
-                    Resource resource = CentralizedMutualExclusion.coordenator.getRandomResource();
+                    Resource resource = CentralizedMutualExclusion.coordinator.getRandomResource();
                     System.out.println("\n---> Processo enviando requisição de acesso ao recurso - " + this + " " + resource);
-                    CentralizedMutualExclusion.coordenator.requestResourceAccess(new Requisition(this, resource));
+                    CentralizedMutualExclusion.coordinator.requestResourceAccess(new Requisition(this, resource));
                 } catch (InterruptedException e) {
                     System.out.printf("%s - Processo interrompeu execução\n", this);
                 }

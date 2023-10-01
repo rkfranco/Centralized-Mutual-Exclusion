@@ -2,10 +2,10 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
-public class Coordenator {
+public class Coordinator {
     private final Map<Resource, Queue<Requisition>> resourcesRequisitions;
 
-    public Coordenator() {
+    public Coordinator() {
         this.resourcesRequisitions = new ConcurrentHashMap<>();
 
         // just for testing

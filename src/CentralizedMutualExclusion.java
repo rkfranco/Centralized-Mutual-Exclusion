@@ -8,7 +8,7 @@ public class CentralizedMutualExclusion extends Thread {
     private final int CREATE_PROCESS = 40000;
 
     private final List<Process> processes;
-    public static Coordenator coordenator;
+    public static Coordinator coordinator;
 
     public CentralizedMutualExclusion() {
         this.processes = new ArrayList<>();
@@ -64,7 +64,7 @@ public class CentralizedMutualExclusion extends Thread {
     }
 
     private void setNewCoordenator() {
-        coordenator = new Coordenator();
+        coordinator = new Coordinator();
     }
 
     private void printProcesses() {
